@@ -2,7 +2,8 @@
 layout: post
 title: Ruby Braces
 tagline: and other ambiguities
-author: aghull
+tags: ruby
+category: coding
 time: 2012-03-12 23:50:00 -05:00
 ---
 Ok, ruby. You're confusing me a bit with your syntax. Sometimes I can't tell when I need a space or brace or carriage return. For example:
