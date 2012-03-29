@@ -17,6 +17,8 @@ new_post = <<-eos
 layout: post
 title: #{ title }
 tagline:
+tags:
+category: coding
 time: #{ now.strftime('%Y-%m-%d %H:%M:%S %Z') }
 ---
 eos
