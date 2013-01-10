@@ -23,3 +23,5 @@ This gives you 2 mock copies of your model, one that holds the previous state an
 
     post.was.published? #=> true if published? was true for the previous state
     post.newly.cancelled? #=> true if cancelled? is currently true and *only* as a result of the current changes
+
+This is great for nice readable callbacks and observer's that act on changes in the model's state that just happened.
