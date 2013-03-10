@@ -1,0 +1,290 @@
+---
+layout: post
+title: Backbone Lists &amp; Autocomplete
+tags: backbone
+category: coding
+time: 2013-03-09 09:35:38 EST
+---
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="../../../../../assets/javascripts/underscore-min.js"></script>
+<script src="../../../../../assets/javascripts/backbone-min.js"></script>
+<script src="../../../../../assets/javascripts/backbone-interactive-list.js"></script>
+<script src="../../../../../assets/javascripts/samples.js"></script>
+<script>
+$(function() {
+  $('a.source').on('click', function() {
+    $(this).next().toggle();
+    return false;
+  });
+});
+</script>
+<style> pre { display: none; overflow: auto; white-space: pre; } h3 { margin-top: 10px; } </style>
+
+<p>
+Once you're using backbone to handle your data, it's natural to want to use widgets that speak Backbone. All your end-points will be
+returning JSON objects for Backbone consumption already. What I also like about the Backbone philosophy is libraries that make very few
+assumptions about what you want to do with your objects. Backbone just sets up your objects and then gets our of your way and lets you
+access and customize the underlying objects in a conventional way.
+</p>
+<p>
+What I don't like about JQuery-UI's autocomplete is that it made too many assumptions about the widget's behaviour in order to get common
+use cases up and running quickly. But your endpoints need to return a particular style of JSON and you have to conform to that. Arbitrary
+JSON will not do. Additionally if you want to do something as simple as customizing the line-item
+view, <a href="http://stackoverflow.com/questions/2435964/jqueryui-how-can-i-custom-format-the-autocomplete-plug-in-results">you have to
+override a "private" method</a>.
+</p>
+<p>
+I wanted to have an autocomplete plugin that just uses standard Backbone Collections and Views and let's me access them directly to customize as
+I would normally. I realized that autocomplete is really just a special case of a simple list view that is also a common pattern in
+Backbone. So I created a base InteractiveList View class that renders a Collection and attaches a click handler to each item. Then I created
+an Autocomplete View which attaches to the input element and creates it's own InteractiveList (unless one is provided). It basically just
+adds its own default click handler to do the normal event of populating the form input with the selected item's value. This class then also
+sets up standard keyboard navigation. It has almost the full set of features of the jquery-ui version but is easier to customize.
+</p>
+<p>
+If you want to use a jquery-style $('element').autocomplete(), you can do so by attaching the Backbone View using some plugin glue.
+</p>
+
+<p>Here's the <a href="../../../../../assets/javascripts/backbone-interactive-list.js">source</a>. It's quite lean.</p>
+
+<h2>Examples:</h2>
+
+<h3>Simple List</h3>
+<p>Simply display a Collection and use the attached template and click handler for each line item. The view can take an existing Collection
+  or a url parameter, in which case it will create it's own Collection using Backbone.fetch().</p>
+
+<button id="simple-list">Show List</button>
+<div id="simple-results"></div>
+
+<script>
+  simpleList = new Backbone.InteractiveList({
+    collection: countries,
+    el: $('#simple-results'),
+    template: _.template('<p><%= name %></p>'),
+    limit: 5,
+    click: function(model, i) {
+      this.$el.empty();
+      alert('clicked ' + model.get('abbreviation') +' (' + i + ')');
+    },
+  });
+  
+  $('button#simple-list').on('click', function() { simpleList.render() });
+</script>
+
+<a href="#" class="source">Show/Hide source</a>
+<pre><code>&lt;button id="simple-list"&gt;Show List&lt;/button&gt;
+  &lt;div id="simple-results"&gt;&lt;/div&gt;
+  &lt;script&gt;
+  simpleList = new Backbone.InteractiveList({
+    collection: countries,
+    el: $('#simple-results'),
+    template: _.template('&lt;p&gt;&lt;%= name %&gt;&lt;/p&gt;'),
+    limit: 5,
+    click: function(model, i) {
+      this.$el.empty();
+      alert('clicked ' + model.get('abbreviation') +' (' + i + ')');
+    },
+  });
+  
+  $('button#simple-list').on('click', function() { simpleList.render() });
+  &lt;/script&gt;</code>
+</pre>
+
+<h3>Filtered List</h3>
+<p>Same thing except pass a filter method to narrow the results and add some template code to hilite the matched phrase.</p>
+
+<form id="filtered-list">
+  <input name="search" autocomplete="off">
+  <input type="submit" value="Get List">
+</form>
+<div id="filtered-results"></div>
+<script>
+  filteredList = new Backbone.InteractiveList({
+    collection: countries,
+    el: $('#filtered-results'),
+    template: _.template('<p><%= name.replace(new RegExp("(" + $("form#filtered-list input[name=search]").val() + ")", "i") ,"<b>$1</b>") %></p>'),
+    limit: 5,
+    filter: function(model) {
+      return model.get('name').toLowerCase().indexOf($('form#filtered-list input[name=search]').val().toLowerCase())!=-1;
+    },
+    click: function(model, i) {
+      this.$el.empty();
+      alert('clicked ' + model.get('abbreviation') +' (' + i + ')');
+    },
+  });
+  
+  $('form#filtered-list').on('submit', function(e) { e.preventDefault(); filteredList.render(); return false; });
+</script>
+
+<a href="#" class="source">Show/Hide source</a>
+<pre><code>&lt;form id="filtered-list"&gt;
+  &lt;input name="search" autocomplete="off"&gt;
+  &lt;input type="submit" value="Get List"&gt;
+&lt;/form&gt;
+&lt;div id="filtered-results"&gt;&lt;/div&gt;
+&lt;script&gt;
+  filteredList = new Backbone.InteractiveList({
+    collection: countries,
+    el: $('#filtered-results'),
+    template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("form#filtered-list input[name=search]").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
+    limit: 5,
+    filter: function(model) {
+      return model.get('name').toLowerCase().indexOf($('form#filtered-list input[name=search]').val().toLowerCase())!=-1;
+    },
+    click: function(model, i) {
+      this.$el.empty();
+      alert('clicked ' + model.get('abbreviation') +' (' + i + ')');
+    },
+  });
+  
+  $('form#filtered-list').on('submit', function(e) { e.preventDefault(); filteredList.render(); return false; });
+&lt;/script&gt;</code>
+</pre>
+
+
+<h3>Autocomplete</h3>
+<p>The Autocomplete View takes uses the input element and sets up the InteractiveList as the results div using the provided element. It then
+  attaches the 2 views together with a standard filter and sets up the navigational events.</p>
+
+<style>
+.autocomplete-results {
+  position: absolute;
+  background: white;
+  width: 200px;
+  overflow: auto;
+  max-height: 200px;
+}
+.autocomplete-results .selected {
+  background: #ddd;
+}
+</style>
+
+<form id="autocomplete-list">
+  <input name="search" autocomplete="off" style="width: 200px">
+  <div class="autocomplete-results"></div>
+</form>
+
+<script>
+  autocompleteList = new Backbone.AutocompleteList({
+    collection: countries,
+    el: $('form#autocomplete-list input[name=search]'),
+    results: $('form#autocomplete-list .autocomplete-results'),
+    template: _.template('<p><%= name.replace(new RegExp("(" + $("form#autocomplete-list input[name=search]").val() + ")", "i") ,"<b>$1</b>") %></p>'),
+    delay: 0,
+    minLength: 1,
+    value: function(model) { return model.get('name') },
+  });
+</script>
+
+<a href="#" class="source">Show/Hide source</a>
+<pre>
+<code>&lt;form id="autocomplete-list"&gt;
+  &lt;input name="search" autocomplete="off" style="width: 200px"&gt;
+  &lt;div class="autocomplete-results"&gt;&lt;/div&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+  autocompleteList = new Backbone.AutocompleteList({
+    collection: countries,
+    el: $('form#autocomplete-list input[name=search]'),
+    results: $('form#autocomplete-list .autocomplete-results'),
+    template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("form#autocomplete-list input[name=search]").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
+    delay: 0,
+    minLength: 1,
+    value: function(model) { return model.get('name') },
+  });
+&lt;/script&gt;</code>
+</pre>
+
+<h3>Autocomplete using remote Collection</h3>
+<p>Same thing except using a Backbone Collection available on a remote url. The url is provided as a method that sends the search term,
+  which Backbone allows.</p>
+
+<form id="autocomplete-remote">
+  <input name="search" autocomplete="off" style="width: 200px">
+</form>
+
+<script>
+  autocompleteRemote = new Backbone.AutocompleteList({
+    url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+    filter: null,
+    el: $('form#autocomplete-remote input[name=search]'),
+    template: _.template('<p><%= name.replace(new RegExp("(" + $("form#autocomplete-remote input[name=search]").val() + ")", "i") ,"<b>$1</b>") %></p>'),
+    delay: 500,
+    minLength: 3,
+    value: function(model) { return model.get('name') },
+  });
+</script>
+
+<a href="#" class="source">Show/Hide source</a>
+<pre>
+<code>&lt;form id="autocomplete-remote"&gt;
+  &lt;input name="search" autocomplete="off" style="width: 200px"&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+  autocompleteRemote = new Backbone.AutocompleteList({
+    url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+    filter: null,
+    el: $('form#autocomplete-remote input[name=search]'),
+    template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("form#autocomplete-remote input[name=search]").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
+    delay: 500,
+    minLength: 3,
+    value: function(model) { return model.get('name') },
+  });
+&lt;/script&gt;</code>
+</pre>
+
+<h3>Autocomplete replacement for jquery-ui version</h3>
+<p>With a little jquery plugin glue, it can be a drop-in replacement (more or less) for $.fn.autocomplete if we want to use it that way.</p>
+
+<form>
+  <input id="jq-autocomplete" autocomplete="off">
+</form>
+
+<script>
+$.fn.autocomplete = function(options) {
+  return this.each(function() {
+    var $this = $(this);
+    if (!$this.data('autocomplete')) {
+      $this.data('autocomplete', data = new Backbone.AutocompleteList(_.defaults(options || {}, { el: this })));
+    }
+  });
+};
+
+$('#jq-autocomplete').autocomplete({
+  url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+  filter: null,
+  template: _.template('<p><%= name.replace(new RegExp("(" + $("#jq-autocomplete").val() + ")", "i") ,"<b>$1</b>") %></p>'),
+  delay: 500,
+  minLength: 3,
+  value: function(model) { return model.get('name') },
+});
+</script>
+
+<a href="#" class="source">Show/Hide source</a>
+<pre>
+<code>&lt;form&gt;
+  &lt;input id="jq-autocomplete" autocomplete="off"&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+$.fn.autocomplete = function(options) {
+  return this.each(function() {
+    var $this = $(this);
+    if (!$this.data('autocomplete')) {
+      $this.data('autocomplete', data = new Backbone.AutocompleteList(_.defaults(options || {}, { el: this })));
+    }
+  });
+};
+
+$('#jq-autocomplete').autocomplete({
+  url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+  filter: null,
+  template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("#jq-autocomplete").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
+  delay: 500,
+  minLength: 3,
+  value: function(model) { return model.get('name') },
+});
+&lt;/script&gt;</code>
+</pre>
