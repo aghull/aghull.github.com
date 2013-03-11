@@ -1,0 +1,3 @@
+[submodule "assets/javascripts/backbone-autocomplete"]
+	path = assets/javascripts/backbone-autocomplete
+	url = git@github.com:aghull/backbone-autocomplete.git

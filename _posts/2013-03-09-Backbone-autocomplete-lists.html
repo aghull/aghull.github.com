@@ -6,10 +6,10 @@ category: coding
 time: 2013-03-09 09:35:38 EST
 ---
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-<script src="../../../../../assets/javascripts/underscore-min.js"></script>
-<script src="../../../../../assets/javascripts/backbone-min.js"></script>
-<script src="../../../../../assets/javascripts/backbone-interactive-list.js"></script>
-<script src="../../../../../assets/javascripts/samples.js"></script>
+<script src="/assets/javascripts/underscore-min.js"></script>
+<script src="/assets/javascripts/backbone-min.js"></script>
+<script src="/assets/javascripts/backbone-autocomplete/backbone-autocomplete.js"></script>
+<script src="/assets/javascripts/samples.js"></script>
 <script>
 $(function() {
   $('a.source').on('click', function() {
@@ -45,7 +45,7 @@ sets up standard keyboard navigation. It has almost the full set of features of 
 If you want to use a jquery-style $('element').autocomplete(), you can do so by attaching the Backbone View using some plugin glue.
 </p>
 
-<p>Here's the <a href="../../../../../assets/javascripts/backbone-interactive-list.js">source</a>. It's quite lean.</p>
+<p>Here's the <a href="https://github.com/aghull/backbone-autocomplete">source</a>. It's quite lean.</p>
 
 <h2>Examples:</h2>
 
@@ -206,7 +206,7 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 
 <script>
   autocompleteRemote = new Backbone.AutocompleteList({
-    url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+    url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
     filter: null,
     el: $('form#autocomplete-remote input[name=search]'),
     template: _.template('<p><%= name.replace(new RegExp("(" + $("form#autocomplete-remote input[name=search]").val() + ")", "i") ,"<b>$1</b>") %></p>'),
@@ -224,7 +224,7 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 
 &lt;script&gt;
   autocompleteRemote = new Backbone.AutocompleteList({
-    url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+    url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
     filter: null,
     el: $('form#autocomplete-remote input[name=search]'),
     template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("form#autocomplete-remote input[name=search]").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
@@ -253,7 +253,7 @@ $.fn.autocomplete = function(options) {
 };
 
 $('#jq-autocomplete').autocomplete({
-  url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+  url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
   filter: null,
   template: _.template('<p><%= name.replace(new RegExp("(" + $("#jq-autocomplete").val() + ")", "i") ,"<b>$1</b>") %></p>'),
   delay: 500,
@@ -279,7 +279,7 @@ $.fn.autocomplete = function(options) {
 };
 
 $('#jq-autocomplete').autocomplete({
-  url: function() { return '../../../../../assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+  url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
   filter: null,
   template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("#jq-autocomplete").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
   delay: 500,
