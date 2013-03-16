@@ -18,10 +18,10 @@ $(function() {
   });
 });
 </script>
-<style> pre { display: none; overflow: auto; white-space: pre; } h3 { margin-top: 10px; } </style>
+<style> pre { display: none; overflow: auto; white-space: pre; word-break: normal; word-wrap: normal; } h3 { margin-top: 10px; } </style>
 
 <p>
-Once you're using backbone to handle your data, it's natural to want to use widgets that speak Backbone. All your end-points will be
+Once you're using Backbone to handle your data, it's natural to want to use widgets that speak Backbone. All your end-points will be
 returning JSON objects for Backbone consumption already. What I also like about the Backbone philosophy is libraries that make very few
 assumptions about what you want to do with your objects. Backbone just sets up your objects and then gets our of your way and lets you
 access and customize the underlying objects in a conventional way.
@@ -31,15 +31,17 @@ What I don't like about JQuery-UI's autocomplete is that it made too many assump
 use cases up and running quickly. But your endpoints need to return a particular style of JSON and you have to conform to that. Arbitrary
 JSON will not do. Additionally if you want to do something as simple as customizing the line-item
 view, <a href="http://stackoverflow.com/questions/2435964/jqueryui-how-can-i-custom-format-the-autocomplete-plug-in-results">you have to
-override a "private" method</a>.
+override a "private" method</a>. Even Twitter's typeahead.js (which does a ton of other awesome stuff) is not easy to customize to deal with
+arbitrary JSON.
 </p>
 <p>
-I wanted to have an autocomplete plugin that just uses standard Backbone Collections and Views and let's me access them directly to customize as
-I would normally. I realized that autocomplete is really just a special case of a simple list view that is also a common pattern in
-Backbone. So I created a base InteractiveList View class that renders a Collection and attaches a click handler to each item. Then I created
-an Autocomplete View which attaches to the input element and creates it's own InteractiveList (unless one is provided). It basically just
-adds its own default click handler to do the normal event of populating the form input with the selected item's value. This class then also
-sets up standard keyboard navigation. It has almost the full set of features of the jquery-ui version but is easier to customize.
+I wanted to have an autocomplete plugin that just uses standard Backbone Collections and Views and let's me access them directly to
+customize as I would normally. I realized that autocomplete is really just a special case of a simple list view that is also a common
+pattern in Backbone. So I created a base InteractiveList View class that renders a Collection and attaches a click handler to each
+item. Then I created an Autocomplete View which attaches to the input element and creates it's own InteractiveList (unless one is
+provided). It basically just adds its own default click handler to do the normal event of populating the form input with the selected item's
+value. This class then also sets up standard keyboard navigation. It has almost the full set of features of the jquery-ui version but is
+much easier to customize. With Backbone we can deal with JSON using the same tools we already know and love.
 </p>
 <p>
 If you want to use a jquery-style $('element').autocomplete(), you can do so by attaching the Backbone View using some plugin glue.
@@ -117,7 +119,9 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 </script>
 
 <a href="#" class="source">Show/Hide source</a>
-<pre><code>&lt;form id="filtered-list"&gt;
+<pre>
+asdf asdf asdf asdf asdf asdfa sdf asdf asdf asdf asd fasdfasdf asdf asdf asdf asd fasdf asdf
+<code>&lt;form id="filtered-list"&gt;
   &lt;input name="search" autocomplete="off"&gt;
   &lt;input type="submit" value="Get List"&gt;
 &lt;/form&gt;
@@ -143,8 +147,8 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 
 
 <h3>Autocomplete</h3>
-<p>The Autocomplete View takes uses the input element and sets up the InteractiveList as the results div using the provided element. It then
-  attaches the 2 views together with a standard filter and sets up the navigational events.</p>
+<p>The Autocomplete View takes the input element and sets up an InteractiveList View for the results using the provided element. This View
+  can be accessed by autocompleteList.resultsView if we want to customize it. It then attaches the 2 views together with a standard filter and sets up the navigational events.</p>
 
 <style>
 .autocomplete-results {
@@ -198,7 +202,8 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 
 <h3>Autocomplete using remote Collection</h3>
 <p>Same thing except using a Backbone Collection available on a remote url. The url is provided as a method that sends the search term,
-  which Backbone allows.</p>
+  which Backbone allows. Here we use last.fm's JSONP service, demonstrating how the autocomplete can be as flexible as Backbone itself. We
+  override the InteractiveList's collection.parse method to handle the last.fm data.</p>
 
 <form id="autocomplete-remote">
   <input name="search" autocomplete="off" style="width: 200px">
@@ -206,14 +211,16 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 
 <script>
   autocompleteRemote = new Backbone.AutocompleteList({
-    url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+    url: function() { return 'http://ws.audioscrobbler.com/2.0/?method=artist.search&api_key=cef6d600c717ecadfbe965380c9bac8b&format=json&' + $.param({ artist: $('form#autocomplete-remote input[name=search]').val() }); },
     filter: null,
     el: $('form#autocomplete-remote input[name=search]'),
     template: _.template('<p><%= name.replace(new RegExp("(" + $("form#autocomplete-remote input[name=search]").val() + ")", "i") ,"<b>$1</b>") %></p>'),
     delay: 500,
     minLength: 3,
     value: function(model) { return model.get('name') },
-  });
+  }).resultsView.collection.parse = function(resp) {
+    return resp.results.artistmatches.artist;
+  };
 </script>
 
 <a href="#" class="source">Show/Hide source</a>
@@ -224,14 +231,16 @@ If you want to use a jquery-style $('element').autocomplete(), you can do so by 
 
 &lt;script&gt;
   autocompleteRemote = new Backbone.AutocompleteList({
-    url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+    url: function() { return 'http://ws.audioscrobbler.com/2.0/?method=artist.search&api_key=cef6d600c717ecadfbe965380c9bac8b&format=json&' + $.param({ artist: $('form#autocomplete-remote input[name=search]').val() }); },
     filter: null,
     el: $('form#autocomplete-remote input[name=search]'),
     template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("form#autocomplete-remote input[name=search]").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
     delay: 500,
     minLength: 3,
     value: function(model) { return model.get('name') },
-  });
+  }).resultsView.collection.parse = function(resp) {
+    return resp.results.artistmatches.artist;
+  };
 &lt;/script&gt;</code>
 </pre>
 
@@ -253,7 +262,7 @@ $.fn.autocomplete = function(options) {
 };
 
 $('#jq-autocomplete').autocomplete({
-  url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+  url: function() { return '/assets/sample.json?' + $.param({ term: $('#jq-autocomplete').val() }); },
   filter: null,
   template: _.template('<p><%= name.replace(new RegExp("(" + $("#jq-autocomplete").val() + ")", "i") ,"<b>$1</b>") %></p>'),
   delay: 500,
@@ -279,7 +288,7 @@ $.fn.autocomplete = function(options) {
 };
 
 $('#jq-autocomplete').autocomplete({
-  url: function() { return '/assets/sample.json?' + $.param({ term: $('form#autocomplete-remote input[name=search]').val() }); },
+  url: function() { return '/assets/sample.json?' + $.param({ term: $('#jq-autocomplete').val() }); },
   filter: null,
   template: _.template('&lt;p&gt;&lt;%= name.replace(new RegExp("(" + $("#jq-autocomplete").val() + ")", "i") ,"&lt;b&gt;$1&lt;/b&gt;") %&gt;&lt;/p&gt;'),
   delay: 500,
@@ -288,3 +297,5 @@ $('#jq-autocomplete').autocomplete({
 });
 &lt;/script&gt;</code>
 </pre>
+
+
