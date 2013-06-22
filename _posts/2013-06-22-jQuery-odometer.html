@@ -1,0 +1,22 @@
+---
+layout: post
+title: jQuery Odometer
+tags: jquery
+category: coding
+time: 2013-06-22 17:35:38 EST
+---
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+<script src="/assets/javascripts/jquery-texteffects/effects.js"></script>
+<body>
+Playing around with the idea of a flexible text-effects jQuery plugin that detaches elements from the dom, does stuff to them, then reattaches them. Could be used for text transitions, e.g.:<br>
+<br>
+<br>
+<div style="font-size: 20px; line-height:24px; margin: 10px">
+Some number: <span id="somenumber">1987820</span>
+</div>
+<form onsubmit="$('#somenumber').textEffects({inc:parseInt($('#inc').val(),10)}); return false">
+  <input id="inc" value="+30000">
+  <input type="submit" value="$.textEffects">
+</form>
+<a href="//github.com/aghull/jquery-texteffects">Github</a>
