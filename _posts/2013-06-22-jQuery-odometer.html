@@ -19,4 +19,15 @@ Some number: <span id="somenumber">1987820</span>
   <input id="inc" value="+30000">
   <input type="submit" value="$.textEffects">
 </form>
+
+<div style="font-size: 20px; line-height:24px; margin: 10px">
+Some text: <span id="sometext" style="font-family: monospace;">ENCRYPTED</span></p>
+</div>
+<form onsubmit="$('#sometext').textEffects({text:$('#text').val()}); return false">
+  <input id="text" value="PASSWORDS">
+  <input type="submit" value="$.textEffects">
+</form>
+
+<p>The elements are regular divs or spans with text in them. The text effect methods copies them, splits them apart, wraps them up in floating divs, runs its animations, then returns them to their normal place in the dom.</p>
+
 <a href="//github.com/aghull/jquery-texteffects">Github</a>
