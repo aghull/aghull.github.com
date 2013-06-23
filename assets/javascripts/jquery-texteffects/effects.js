@@ -34,7 +34,7 @@
       this.numberFlip(this.$el.text(), String(target), speed);
       var i;
       for (i=0; i!=speed; i++) {
-        this.blur(this.spans[this.spans.length-speed+i], i+1);
+        this.blur(this.spans[this.spans.length-speed+i], i+1, '0123456789');
       }
     },
 
@@ -52,17 +52,28 @@
         target = target + ' ';
       }
       _.each(this.spans, function(span, i) {
-        var s=[];
-        _.times(_.random(3,20), function() { s.push(that.options.chars[_.random(that.options.chars.length-1)]); });
-        s.push(target[i]);
-        that.flipping++;
-        that.flipTimes(span, s, function() {
-          that.flipping--;
-          if (that.flipping==0) {
-            that.reattach(that.$el.text(target)); 
-            that.complete();
-          }
+        var s1=[], s2=[];
+        _.times(_.random(10,30), function() {
+          s1.push(that.options.chars[_.random(that.options.chars.length-1)]);
         });
+        _.times(3, function() {
+          s2.push(that.options.chars[_.random(that.options.chars.length-1)]);
+        });
+        s2.push(target[i]);
+        that.flipping++;
+        that.blur(span, 1, that.options.chars);
+        setTimeout(function() {
+          that.stopBlur(span);
+          that.flipTimes(span, s1, 100, function() {
+            that.flipTimes(span, s2, 500, function() {
+              that.flipping--;
+              if (that.flipping==0) {
+                that.reattach(that.$el.text(target)); 
+                that.complete();
+              }
+            });
+          });
+        }, _.random(1000, 4000));
       });
     },
 
@@ -105,12 +116,12 @@
       }
     },
 
-    flipTimes: function($el, queue, callback) {
+    flipTimes: function($el, queue, speed, callback) {
       var that = this
       , next = queue.shift();
       if (next) {
-        this.flip($el, next, 100, 1, function() {
-          that.flipTimes($el, queue, callback);
+        this.flip($el, next, speed, 1, function() {
+          that.flipTimes($el, queue, speed, callback);
         });
       } else {
         if (typeof callback=='function') {
@@ -171,8 +182,9 @@
     },
 
     // speed: 1: normal, 2+: faster
-    blur: function($el, speed) {
+    blur: function($el, speed, chars) {
       var that = this;
+      chars = chars || this.options.chars;
       var letters = [ this.detach($el), this.detach($el), this.detach($el), this.detach($el), this.detach($el, true) ]
       , center = $el.position().top
       , offset = $el.height()*0.1;
@@ -181,19 +193,19 @@
       letters[2].css({top: center, opacity: 0.2/speed});
       letters[1].css({top: center + offset, opacity: 0.2/speed});
       letters[0].css({top: center + 2*offset, opacity: 0.2/speed});
-      _.each(letters, function(letter) { that.flipRandomly(letter); });
+      _.each(letters, function(letter) { that.flipRandomly(letter, chars); });
     },
 
     stopBlur: function($el) {
       this.reattach($el);
     },
 
-    flipRandomly: function($el) {
+    flipRandomly: function($el, chars) {
       var that = this;
       if ($el.parent().length) {
         setTimeout(function() {
-          $el.text(_.random(0,9));
-          that.flipRandomly($el);
+          $el.text(chars[_.random(chars.length-1)]);
+          that.flipRandomly($el, chars);
         }, 10);
       }
     }
